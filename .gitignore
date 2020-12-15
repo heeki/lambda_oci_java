@@ -1,0 +1,21 @@
+# compiled
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# config
+.mvn/*
+etc/*
+HELP.md
+mvnw
+notes.md
+
+# project
+.classpath
+.project
+.settings/
+
+# tmp
+iac/*_output.yaml
+tmp/

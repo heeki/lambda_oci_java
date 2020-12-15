@@ -1,0 +1,85 @@
+openapi: 3.0.1
+info:
+  title: oci-api-customer
+  description: OCI API for Customers
+  version: 0.1.0
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+components:
+  responses:
+    error:
+      description: error
+
+paths:
+  /:
+    get:
+      summary: customer
+      description: returns list of customers
+      responses:
+        200:
+          description: ok
+        500:
+          $ref: '#/components/responses/error'
+        default:
+          description: ok
+      security:
+        - unicorn-api-authorizer: []
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        payloadFormatVersion: 2.0
+        responses:
+          default:
+            statusCode: 200
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn.Arn}/invocations'
+    post:
+      summary: customer
+      description: create customer
+      responses:
+        200:
+          description: ok
+        default:
+          description: error
+      security:
+        - unicorn-api-authorizer: []
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        payloadFormatVersion: 2.0
+        responses:
+          default:
+            statusCode: 200
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn.Arn}/invocations'
+  /{proxy+}:
+    delete:
+      summary: customer
+      description: deletes customer
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema:
+            type: string
+          description: customer id
+      responses:
+        200:
+          description: ok
+        500:
+          $ref: '#/components/responses/error'
+        default:
+          $ref: '#/components/responses/error'
+      security:
+        - unicorn-api-authorizer: []
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        payloadFormatVersion: 2.0
+        responses:
+          default:
+            statusCode: 200
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn.Arn}/invocations'
