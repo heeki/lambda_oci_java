@@ -20,6 +20,18 @@ public class Customer {
         this.phone_number_verified = phone_number_verified;
     }
 
+    public Customer(String json) {
+        Gson g = new Gson();
+        Customer c = g.fromJson(json, Customer.class);
+        this.uuid = UUID.randomUUID();
+        this.given_name = c.given_name;
+        this.family_name = c.family_name;
+        this.birthdate = c.birthdate;
+        this.email = c.email;
+        this.phone_number = c.phone_number;
+        this.phone_number_verified = c.phone_number_verified;
+    }
+
     public String toString() {
         Gson g = new Gson();
         return g.toJson(this);

@@ -1,9 +1,11 @@
 include etc/execute_env.sh
 
-sam: mvn.package sam.package sam.deploy
+sam: sam.package sam.deploy
 
 mvn.package:
 	mvn package
+docker.lambda.build:
+	docker build -f dockerfile.native -t heeki/oci_springboot_lambda .
 
 sam.build:
 	sam build --profile ${PROFILE} --template ${TEMPLATE} --parameter-overrides ${PARAMS} --build-dir build --manifest requirements.txt --use-container
