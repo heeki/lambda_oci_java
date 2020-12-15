@@ -1,3 +1,5 @@
+package cloud.heeki.oci.lib;
+
 import com.google.gson.Gson;
 import java.util.UUID;
 

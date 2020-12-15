@@ -1,8 +1,11 @@
+package cloud.heeki.oci;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
+import cloud.heeki.oci.lib.Customer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.util.ArrayList;
@@ -26,7 +29,7 @@ public class OciHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGate
         LambdaLogger logger = context.getLogger();
         logger.log(g.toJson(context));
         logger.log(g.toJson(event));
-        String method = event.getRequestContext().getRouteKey().split(" ", 2)[0];
+        String method = event.getRequestContext().getHttp().getMethod();
         String response = "";
         switch (method) {
             case "GET":

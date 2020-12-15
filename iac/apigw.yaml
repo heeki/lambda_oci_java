@@ -65,7 +65,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ../target/oci-0.0.1-SNAPSHOT.jar
-      Handler: OciHandler::handleRequest
+      Handler: cloud.heeki.oci.OciHandler::handleRequest
       Role: !GetAtt FnExecRole.Arn
   FnLogGroup:
     Type: AWS::Logs::LogGroup
@@ -83,7 +83,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       ImageUri: !Ref imageUri
-      Handler: OciHandler::handleRequest
+      Handler: cloud.heeki.oci.OciHandler::handleRequest
       Role: !GetAtt FnExecRole.Arn
   FnOciLogGroup:
     Type: AWS::Logs::LogGroup

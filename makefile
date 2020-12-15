@@ -4,6 +4,9 @@ mvn.package:
 	mvn package
 
 docker: docker.lambda.build docker.lambda.login docker.lambda.tag docker.lambda.push
+docker.lambda.unzip:
+	rm -rf tmp/jar
+	unzip target/oci-0.0.1-SNAPSHOT.jar -d tmp/jar
 docker.lambda.build:
 	docker build -f dockerfile.lambda -t heeki/oci_lambda .
 docker.lambda.login:
@@ -12,6 +15,17 @@ docker.lambda.tag:
 	docker tag ${CIMAGE}:latest ${ACCOUNTID}.dkr.ecr.${REGION}.amazonaws.com/${CIMAGE}:latest
 docker.lambda.push:
 	docker push ${ACCOUNTID}.dkr.ecr.${REGION}.amazonaws.com/${CIMAGE}:latest
+docker.lambda.run:
+	docker run -p 9000:8080 ${CIMAGE}:latest
+	# docker run -p 9000:8080 -e CLASSPATH=/var/task ${CIMAGE}:latest
+docker.lambda.test:
+	curl -s -XPOST -d '{}' http://localhost:9000/2015-03-31/functions/function/invocations | jq
+docker.lambda.ssh:
+	docker exec -it c95d8ee23285 /bin/bash
+docker.clean.rm:
+	for i in `docker ps -a | awk '{print $$12}'`; do docker rm $$i; done
+docker.clean.rmi:
+	for i in `docker images | grep none | awk '{print $$3}'`; do docker rmi $$i; done
 
 sam: sam.package sam.deploy
 sam.build:
