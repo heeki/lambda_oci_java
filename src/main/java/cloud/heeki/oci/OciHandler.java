@@ -1,8 +1,8 @@
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2ProxyRequestEvent;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2ProxyResponseEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.util.ArrayList;
@@ -10,7 +10,7 @@ import java.util.Base64;
 import java.util.Map;
 import java.util.HashMap;
 
-public class OciHandler implements RequestHandler<APIGatewayV2ProxyRequestEvent, APIGatewayV2ProxyResponseEvent> {
+public class OciHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
     private ArrayList<Customer> customers = new ArrayList<Customer>();
     private Gson g = new GsonBuilder().setPrettyPrinting().create();
 
@@ -22,10 +22,10 @@ public class OciHandler implements RequestHandler<APIGatewayV2ProxyRequestEvent,
     }
 
     @Override
-    public APIGatewayV2ProxyResponseEvent handleRequest(APIGatewayV2ProxyRequestEvent event, Context context) {
+    public APIGatewayV2HTTPResponse handleRequest(APIGatewayV2HTTPEvent event, Context context) {
         LambdaLogger logger = context.getLogger();
-        logger.log(g.toJson(context) + "\n");
-        logger.log(g.toJson(event) + "\n");
+        logger.log(g.toJson(context));
+        logger.log(g.toJson(event));
         String method = event.getRequestContext().getRouteKey().split(" ", 2)[0];
         String response = "";
         switch (method) {
@@ -42,31 +42,31 @@ public class OciHandler implements RequestHandler<APIGatewayV2ProxyRequestEvent,
         return buildResponse(200, response);
     }
 
-    private String getCustomers(APIGatewayV2ProxyRequestEvent event, Context context) {
+    private String getCustomers(APIGatewayV2HTTPEvent event, Context context) {
         return this.customers.toString();
     }
 
-    private String createCustomer(APIGatewayV2ProxyRequestEvent event, Context context) {
+    private String createCustomer(APIGatewayV2HTTPEvent event, Context context) {
         String body = getDecodedBody(event);
         Customer c = new Customer(body);
         customers.add(c);
         return c.uuid.toString();
     }
 
-    private void deleteCustomer(APIGatewayV2ProxyRequestEvent event, Context context) {
+    private void deleteCustomer(APIGatewayV2HTTPEvent event, Context context) {
         String id = event.getPathParameters().get("proxy");
         customers.removeIf(c -> c.uuid.toString().equals(id));
     }
 
-    private String getDecodedBody(APIGatewayV2ProxyRequestEvent event) {
+    private String getDecodedBody(APIGatewayV2HTTPEvent event) {
         String body = "";
-        if (event.isIsBase64Encoded()) body = new String(Base64.getDecoder().decode(event.getBody()));
+        if (event.getIsBase64Encoded()) body = new String(Base64.getDecoder().decode(event.getBody()));
         else body = event.getBody();
         return body;
     }
 
-    private APIGatewayV2ProxyResponseEvent buildResponse(int code, String body) {
-        APIGatewayV2ProxyResponseEvent response = new APIGatewayV2ProxyResponseEvent();
+    private APIGatewayV2HTTPResponse buildResponse(int code, String body) {
+        APIGatewayV2HTTPResponse response = new APIGatewayV2HTTPResponse();
         response.setIsBase64Encoded(false);
         response.setStatusCode(code);
         HashMap<String, String> headers = new HashMap<String, String>();

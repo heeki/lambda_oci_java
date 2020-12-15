@@ -1,12 +1,19 @@
 include etc/execute_env.sh
 
-sam: sam.package sam.deploy
-
 mvn.package:
 	mvn package
-docker.lambda.build:
-	docker build -f dockerfile.native -t heeki/oci_springboot_lambda .
 
+docker: docker.lambda.build docker.lambda.login docker.lambda.tag docker.lambda.push
+docker.lambda.build:
+	docker build -f dockerfile.lambda -t heeki/oci_lambda .
+docker.lambda.login:
+	aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ACCOUNTID}.dkr.ecr.${REGION}.amazonaws.com
+docker.lambda.tag:
+	docker tag ${CIMAGE}:latest ${ACCOUNTID}.dkr.ecr.${REGION}.amazonaws.com/${CIMAGE}:latest
+docker.lambda.push:
+	docker push ${ACCOUNTID}.dkr.ecr.${REGION}.amazonaws.com/${CIMAGE}:latest
+
+sam: sam.package sam.deploy
 sam.build:
 	sam build --profile ${PROFILE} --template ${TEMPLATE} --parameter-overrides ${PARAMS} --build-dir build --manifest requirements.txt --use-container
 sam.package:
