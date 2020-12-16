@@ -33,6 +33,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/apigateway/oci-api-customer-${Api}"
+      RetentionInDays: 7
 
   # Lambda
   FnExecRole:
