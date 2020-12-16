@@ -15,7 +15,8 @@ import java.util.HashMap;
 
 public class OciHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
     private ArrayList<Customer> customers = new ArrayList<Customer>();
-    private Gson g = new GsonBuilder().setPrettyPrinting().create();
+    // private Gson g = new GsonBuilder().setPrettyPrinting().create();
+    private Gson g = new Gson();
 
     public OciHandler() {
         Customer c1 = new Customer("John", "Doe", "1970-01-01", "john.doe@heeki.cloud", "+15551234567", true);
