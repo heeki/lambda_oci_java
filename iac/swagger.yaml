@@ -1,6 +1,6 @@
 openapi: 3.0.1
 info:
-  title: oci-api-customer
+  title: oci-api-customer-java
   description: OCI API for Customers
   version: 0.1.0
   license:

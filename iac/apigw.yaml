@@ -5,7 +5,6 @@ Globals:
   Api:
     OpenApiVersion: 3.0.1
   Function:
-    Runtime: java11
     Timeout: 60
 Parameters:
   apiStage:
@@ -64,6 +63,7 @@ Resources:
   Fn:
     Type: AWS::Serverless::Function
     Properties:
+      Runtime: java11
       CodeUri: ../target/oci-0.0.1-SNAPSHOT.jar
       Handler: cloud.heeki.oci.OciHandler::handleRequest
       Role: !GetAtt FnExecRole.Arn
@@ -82,8 +82,8 @@ Resources:
   FnOci:
     Type: AWS::Serverless::Function
     Properties:
+      PackageType: Image
       ImageUri: !Ref imageUri
-      Handler: cloud.heeki.oci.OciHandler::handleRequest
       Role: !GetAtt FnExecRole.Arn
   FnOciLogGroup:
     Type: AWS::Logs::LogGroup

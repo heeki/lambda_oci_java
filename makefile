@@ -1,25 +1,23 @@
 include etc/execute_env.sh
 
+all: mvn.package docker sam
+
 mvn.package:
 	mvn package
 
 docker: docker.lambda.build docker.lambda.login docker.lambda.tag docker.lambda.push
-docker.lambda.unzip:
-	rm -rf tmp/jar
-	unzip target/oci-0.0.1-SNAPSHOT.jar -d tmp/jar
 docker.lambda.build:
-	docker build -f dockerfile.lambda -t heeki/oci_lambda .
+	docker build -f dockerfile.lambda -t ${CIMAGE}:${CVERSION} .
 docker.lambda.login:
 	aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ACCOUNTID}.dkr.ecr.${REGION}.amazonaws.com
 docker.lambda.tag:
-	docker tag ${CIMAGE}:latest ${ACCOUNTID}.dkr.ecr.${REGION}.amazonaws.com/${CIMAGE}:latest
+	docker tag ${CIMAGE}:${CVERSION} ${ACCOUNTID}.dkr.ecr.${REGION}.amazonaws.com/${CIMAGE}:${CVERSION}
 docker.lambda.push:
-	docker push ${ACCOUNTID}.dkr.ecr.${REGION}.amazonaws.com/${CIMAGE}:latest
+	docker push ${ACCOUNTID}.dkr.ecr.${REGION}.amazonaws.com/${CIMAGE}:${CVERSION}
 docker.lambda.run:
-	docker run -p 9000:8080 ${CIMAGE}:latest
-	# docker run -p 9000:8080 -e CLASSPATH=/var/task ${CIMAGE}:latest
+	docker run -p 9000:8080 -e AWS_DEFAULT_REGION=${REGION} -e TABLE=${P_TABLE} ${CIMAGE}:${CVERSION}
 docker.lambda.test:
-	curl -s -XPOST -d '{}' http://localhost:9000/2015-03-31/functions/function/invocations | jq
+	curl -s -XPOST -d @etc/event.json http://localhost:9000/2015-03-31/functions/function/invocations | jq
 docker.lambda.ssh:
 	docker exec -it c95d8ee23285 /bin/bash
 docker.clean.rm:
@@ -32,7 +30,7 @@ sam.build:
 	sam build --profile ${PROFILE} --template ${TEMPLATE} --parameter-overrides ${PARAMS} --build-dir build --manifest requirements.txt --use-container
 sam.package:
 	aws s3 cp iac/swagger.yaml s3://${P_SWAGGER_BUCKET}/${P_SWAGGER_KEY}
-	sam package -t ${TEMPLATE} --output-template-file ${OUTPUT} --s3-bucket ${S3BUCKET}
+	sam package -t ${TEMPLATE} --image-repository ${P_IMAGEURI} --output-template-file ${OUTPUT} --s3-bucket ${S3BUCKET}
 sam.deploy:
 	sam deploy -t ${OUTPUT} --stack-name ${STACK} --parameter-overrides ${PARAMS} --capabilities CAPABILITY_NAMED_IAM
 
