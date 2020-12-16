@@ -2,23 +2,25 @@ include etc/execute_env.sh
 
 all: mvn.package docker sam
 
+mvn.compile:
+	mvn dependency:copy-dependencies -DincludeScope=compile
 mvn.package:
 	mvn package
 
-docker: docker.lambda.build docker.lambda.login docker.lambda.tag docker.lambda.push
-docker.lambda.build:
+docker: docker.build docker.login docker.tag docker.push
+docker.build:
 	docker build -f dockerfile.lambda -t ${CIMAGE}:${CVERSION} .
-docker.lambda.login:
+docker.login:
 	aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ACCOUNTID}.dkr.ecr.${REGION}.amazonaws.com
-docker.lambda.tag:
+docker.tag:
 	docker tag ${CIMAGE}:${CVERSION} ${ACCOUNTID}.dkr.ecr.${REGION}.amazonaws.com/${CIMAGE}:${CVERSION}
-docker.lambda.push:
+docker.push:
 	docker push ${ACCOUNTID}.dkr.ecr.${REGION}.amazonaws.com/${CIMAGE}:${CVERSION}
-docker.lambda.run:
+docker.run:
 	docker run -p 9000:8080 -e AWS_DEFAULT_REGION=${REGION} -e TABLE=${P_TABLE} ${CIMAGE}:${CVERSION}
-docker.lambda.test:
+docker.test:
 	curl -s -XPOST -d @etc/event.json http://localhost:9000/2015-03-31/functions/function/invocations | jq
-docker.lambda.ssh:
+docker.ssh:
 	docker exec -it c95d8ee23285 /bin/bash
 docker.clean.rm:
 	for i in `docker ps -a | awk '{print $$12}'`; do docker rm $$i; done
@@ -38,7 +40,6 @@ sam.local.invoke:
 	sam local invoke -t ${TEMPLATE} --parameter-overrides ${PARAMS} --env-vars etc/envvars.json -e etc/event.json Fn
 sam.local.api:
 	sam local start-api -t ${TEMPLATE} --parameter-overrides ${PARAMS}
-
 lambda.invoke:
 	aws --profile ${PROFILE} lambda invoke --function-name ${FN} --invocation-type RequestResponse --payload file://etc/event.json --cli-binary-format raw-in-base64-out --log-type Tail tmp/fn.json | jq "." > tmp/response.json
 	cat tmp/response.json | jq -r ".LogResult" | base64 --decode
