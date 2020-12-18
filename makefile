@@ -19,7 +19,7 @@ docker.push:
 docker.run:
 	docker run -p 9000:8080 -e AWS_DEFAULT_REGION=${REGION} -e TABLE=${P_TABLE} ${CIMAGE}:${CVERSION}
 docker.test:
-	curl -s -XPOST -d @etc/event.json http://localhost:9000/2015-03-31/functions/function/invocations | jq
+	curl -s -XPOST -d @etc/event.json http://localhost:9000/2015-03-31/functions/function/invocations | jq -r ".body" | jq
 docker.ssh:
 	docker exec -it c95d8ee23285 /bin/bash
 docker.clean.rm:
@@ -37,7 +37,7 @@ sam.deploy:
 	sam deploy -t ${OUTPUT} --stack-name ${STACK} --parameter-overrides ${PARAMS} --capabilities CAPABILITY_NAMED_IAM
 
 sam.local.invoke:
-	sam local invoke -t ${TEMPLATE} --parameter-overrides ${PARAMS} --env-vars etc/envvars.json -e etc/event.json Fn
+	sam local invoke -t ${TEMPLATE} --parameter-overrides ${PARAMS} --env-vars etc/envvars.json -e etc/event.json Fn | jq -r ".body" | jq
 sam.local.api:
 	sam local start-api -t ${TEMPLATE} --parameter-overrides ${PARAMS}
 lambda.invoke:
