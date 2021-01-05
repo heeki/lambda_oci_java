@@ -34,7 +34,7 @@ sam.package:
 	aws s3 cp iac/swagger.yaml s3://${P_SWAGGER_BUCKET}/${P_SWAGGER_KEY}
 	sam package -t ${TEMPLATE} --image-repository ${P_IMAGEURI} --output-template-file ${OUTPUT} --s3-bucket ${S3BUCKET}
 sam.deploy:
-	sam deploy -t ${OUTPUT} --stack-name ${STACK} --parameter-overrides ${PARAMS} --capabilities CAPABILITY_NAMED_IAM
+	sam deploy -t ${OUTPUT} --stack-name ${STACK} --parameter-overrides ${PARAMS} --image-repository ${P_IMAGEURI} --capabilities CAPABILITY_NAMED_IAM
 
 sam.local.invoke:
 	sam local invoke -t ${TEMPLATE} --parameter-overrides ${PARAMS} --env-vars etc/envvars.json -e etc/event.json Fn | jq -r ".body" | jq
