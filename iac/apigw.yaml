@@ -92,12 +92,16 @@ Resources:
       PackageType: Image
       ImageUri: !Ref imageUri
       Role: !GetAtt FnExecRole.Arn
-      # Events:
-      #   Api:
-      #     Type: HttpApi
-      #     Properties:
-      #       Method: GET
-      #       Path: /oci
+    #   Events:
+    #     Api:
+    #       Type: HttpApi
+    #       Properties:
+    #         Method: GET
+    #         Path: /oci
+    # Metadata:
+    #   DockerTag: java11-maven-v1
+    #   DockerContext: ../
+    #   Dockerfile: dockerfile.lambda
   FnOciLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
