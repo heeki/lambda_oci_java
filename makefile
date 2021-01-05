@@ -21,7 +21,7 @@ docker.run:
 docker.test:
 	curl -s -XPOST -d @etc/event.json http://localhost:9000/2015-03-31/functions/function/invocations | jq -r ".body" | jq
 docker.ssh:
-	docker exec -it c95d8ee23285 /bin/bash
+	docker exec -it ${EXECID} /bin/bash
 docker.clean.rm:
 	for i in `docker ps -a | awk '{print $$12}'`; do docker rm $$i; done
 docker.clean.rmi:
@@ -37,9 +37,9 @@ sam.deploy:
 	sam deploy -t ${OUTPUT} --stack-name ${STACK} --parameter-overrides ${PARAMS} --image-repository ${P_IMAGEURI} --capabilities CAPABILITY_NAMED_IAM
 
 sam.local.invoke:
-	sam local invoke -t ${TEMPLATE} --parameter-overrides ${PARAMS} --env-vars etc/envvars.json -e etc/event.json Fn | jq -r ".body" | jq
+	sam local invoke -t ${TEMPLATE} --parameter-overrides ${PARAMS} --env-vars etc/envvars.json -e etc/event.json FnOci | jq -r ".body" | jq
 sam.local.api:
-	sam local start-api -t ${TEMPLATE} --parameter-overrides ${PARAMS}
+	sam local start-api -t ${TEMPLATE} --parameter-overrides ${PARAMS} --warm-containers LAZY
 lambda.invoke:
 	aws --profile ${PROFILE} lambda invoke --function-name ${FN} --invocation-type RequestResponse --payload file://etc/event.json --cli-binary-format raw-in-base64-out --log-type Tail tmp/fn.json | jq "." > tmp/response.json
 	cat tmp/response.json | jq -r ".LogResult" | base64 --decode
