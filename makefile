@@ -36,7 +36,9 @@ sam.package:
 sam.deploy:
 	sam deploy -t ${OUTPUT} --stack-name ${STACK} --parameter-overrides ${PARAMS} --image-repository ${P_IMAGEURI} --capabilities CAPABILITY_NAMED_IAM
 
-sam.local.invoke:
+sam.local.invoke.jar:
+	sam local invoke -t ${TEMPLATE} --parameter-overrides ${PARAMS} --env-vars etc/envvars.json -e etc/event.json Fn | jq -r ".body" | jq
+sam.local.invoke.oci:
 	sam local invoke -t ${TEMPLATE} --parameter-overrides ${PARAMS} --env-vars etc/envvars.json -e etc/event.json FnOci | jq -r ".body" | jq
 sam.local.api:
 	sam local start-api -t ${TEMPLATE} --parameter-overrides ${PARAMS} --warm-containers LAZY
