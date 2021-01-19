@@ -25,6 +25,22 @@ public class OciHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGate
         customers.add(c2);
     }
 
+    private String getCustomers(APIGatewayV2HTTPEvent event, Context context) {
+        return this.customers.toString();
+    }
+
+    private String createCustomer(APIGatewayV2HTTPEvent event, Context context) {
+        String body = getDecodedBody(event);
+        Customer c = new Customer(body);
+        customers.add(c);
+        return c.uuid.toString();
+    }
+
+    private void deleteCustomer(APIGatewayV2HTTPEvent event, Context context) {
+        String id = event.getPathParameters().get("proxy");
+        customers.removeIf(c -> c.uuid.toString().equals(id));
+    }
+
     @Override
     public APIGatewayV2HTTPResponse handleRequest(APIGatewayV2HTTPEvent event, Context context) {
         LambdaLogger logger = context.getLogger();
@@ -44,22 +60,6 @@ public class OciHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGate
                 break;
         }
         return buildResponse(200, response);
-    }
-
-    private String getCustomers(APIGatewayV2HTTPEvent event, Context context) {
-        return this.customers.toString();
-    }
-
-    private String createCustomer(APIGatewayV2HTTPEvent event, Context context) {
-        String body = getDecodedBody(event);
-        Customer c = new Customer(body);
-        customers.add(c);
-        return c.uuid.toString();
-    }
-
-    private void deleteCustomer(APIGatewayV2HTTPEvent event, Context context) {
-        String id = event.getPathParameters().get("proxy");
-        customers.removeIf(c -> c.uuid.toString().equals(id));
     }
 
     private String getDecodedBody(APIGatewayV2HTTPEvent event) {
