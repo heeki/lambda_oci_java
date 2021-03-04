@@ -63,6 +63,23 @@ Resources:
                   - logs:PutLogEvents
                   - logs:DescribeLogStreams
                 Resource: 'arn:aws:logs:*:*:log-group:*:*'
+        - PolicyName: cloudwatch-insights-1
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                Resource: '*'
+        - PolicyName: cloudwatch-insights-2
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: 'arn:aws:logs:*:*:log-group:/aws/lambda-insights:*'
   Fn:
     Type: AWS::Serverless::Function
     Properties:
@@ -70,6 +87,8 @@ Resources:
       CodeUri: ../target/oci-0.0.1-SNAPSHOT.jar
       Handler: cloud.heeki.oci.OciHandler::handleRequest
       Role: !GetAtt FnExecRole.Arn
+      Layers:
+        - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:14'
       # Events:
       #   Api:
       #     Type: HttpApi
