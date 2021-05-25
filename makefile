@@ -1,4 +1,4 @@
-include etc/execute_env.sh
+include etc/environment.sh
 
 all: mvn.package docker sam
 

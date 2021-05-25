@@ -6,6 +6,7 @@ Globals:
     OpenApiVersion: 3.0.1
   Function:
     Timeout: 60
+    MemorySize: 1024
 Parameters:
   apiStage:
     Type: String
