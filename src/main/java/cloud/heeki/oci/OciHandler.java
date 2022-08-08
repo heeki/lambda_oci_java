@@ -6,19 +6,29 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
 import cloud.heeki.oci.lib.Customer;
+import cloud.heeki.oci.lib.PropertiesLoader;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Properties;
 
 public class OciHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
+    private Properties props = PropertiesLoader.loadProperties("application.properties");
     private ArrayList<Customer> customers = new ArrayList<Customer>();
     // private Gson g = new GsonBuilder().setPrettyPrinting().create();
     private Gson g = new Gson();
 
     public OciHandler() {
+        // initialization: database
+        // dbserver = props.getProperty("database.server");
+        // dbport = props.getProperty("database.port");
+        // dbname = props.getProperty("database.name");
+        System.out.println(g.toJson(this.props));
+
+        // initialization: data structures
         Customer c1 = new Customer("John", "Doe", "1970-01-01", "john.doe@heeki.cloud", "+15551234567", true);
         Customer c2 = new Customer("Jane", "Doe", "1970-01-01", "jane.doe@heeki.cloud", "+15551234567", true);
         customers.add(c1);
