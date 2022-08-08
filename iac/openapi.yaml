@@ -29,11 +29,11 @@ paths:
       x-amazon-apigateway-integration:
         httpMethod: POST
         payloadFormatVersion:
-          Fn::Sub: '${payloadVersion}'
+          Fn::Sub: '${pPayloadVersion}'
         responses:
           default:
             statusCode: 200
-        type: AWS_PROXY
+        type: aws_proxy
         uri:
           Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn.Arn}/invocations'
     post:
@@ -49,11 +49,11 @@ paths:
       x-amazon-apigateway-integration:
         httpMethod: POST
         payloadFormatVersion:
-          Fn::Sub: '${payloadVersion}'
+          Fn::Sub: '${pPayloadVersion}'
         responses:
           default:
             statusCode: 200
-        type: AWS_PROXY
+        type: aws_proxy
         uri:
           Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn.Arn}/invocations'
   /jar/{proxy+}:
@@ -79,11 +79,11 @@ paths:
       x-amazon-apigateway-integration:
         httpMethod: POST
         payloadFormatVersion:
-          Fn::Sub: '${payloadVersion}'
+          Fn::Sub: '${pPayloadVersion}'
         responses:
           default:
             statusCode: 200
-        type: AWS_PROXY
+        type: aws_proxy
         uri:
           Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn.Arn}/invocations'
   /oci:
@@ -102,11 +102,11 @@ paths:
       x-amazon-apigateway-integration:
         httpMethod: POST
         payloadFormatVersion:
-          Fn::Sub: '${payloadVersion}'
+          Fn::Sub: '${pPayloadVersion}'
         responses:
           default:
             statusCode: 200
-        type: AWS_PROXY
+        type: aws_proxy
         uri:
           Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FnOci.Arn}/invocations'
     post:
@@ -122,11 +122,11 @@ paths:
       x-amazon-apigateway-integration:
         httpMethod: POST
         payloadFormatVersion:
-          Fn::Sub: '${payloadVersion}'
+          Fn::Sub: '${pPayloadVersion}'
         responses:
           default:
             statusCode: 200
-        type: AWS_PROXY
+        type: aws_proxy
         uri:
           Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FnOci.Arn}/invocations'
   /oci/{proxy+}:
@@ -152,10 +152,10 @@ paths:
       x-amazon-apigateway-integration:
         httpMethod: POST
         payloadFormatVersion:
-          Fn::Sub: '${payloadVersion}'
+          Fn::Sub: '${pPayloadVersion}'
         responses:
           default:
             statusCode: 200
-        type: AWS_PROXY
+        type: aws_proxy
         uri:
           Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FnOci.Arn}/invocations'

@@ -8,15 +8,14 @@ Globals:
     Timeout: 60
     MemorySize: 1024
 Parameters:
-  apiStage:
+  pApiStage:
     Type: String
-  swaggerBucket:
+  pImageUri:
     Type: String
-  swaggerKey:
+  pPayloadVersion:
     Type: String
-  imageUri:
-    Type: String
-  payloadVersion:
+    Default: '2.0'
+  pTableArn:
     Type: String
 Resources:
   # APIGW
@@ -26,12 +25,12 @@ Resources:
       AccessLogSettings:
         DestinationArn: !GetAtt ApiLogGroup.Arn
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength", "auth.status":"$context.authorizer.status", "auth.error":"$context.authorizer.error", "auth.token":"$context.authorizer.token", "auth.reason":"$context.authorizer.reason", "auth.simple":"$context.authorizer.simple", "auth.pversion":"$context.authorizer.pversion" }'
-      StageName: !Ref apiStage
+      StageName: !Ref pApiStage
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
-            Location: !Sub 's3://${swaggerBucket}/${swaggerKey}'
+            Location: openapi.yaml
   ApiLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -81,6 +80,19 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: 'arn:aws:logs:*:*:log-group:/aws/lambda-insights:*'
+        - PolicyName: dynamodb
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:DeleteItem
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                  - dynamodb:UpdateItem
+                Resource: 'arn:aws:logs:*:*:log-group:/aws/lambda-insights:*'
   Fn:
     Type: AWS::Serverless::Function
     Properties:
@@ -88,14 +100,11 @@ Resources:
       CodeUri: ../target/oci-0.0.1-SNAPSHOT.jar
       Handler: cloud.heeki.oci.OciHandler::handleRequest
       Role: !GetAtt FnExecRole.Arn
+      Environment:
+        Variables:
+          TABLE_ARN: !Select [1, !Split ["/", !Ref pTableArn]]
       Layers:
         - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:14'
-      # Events:
-      #   Api:
-      #     Type: HttpApi
-      #     Properties:
-      #       Method: GET
-      #       Path: /jar
   FnLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -112,18 +121,12 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       PackageType: Image
-      ImageUri: !Ref imageUri
+      ImageUri: !Ref pImageUri
       Role: !GetAtt FnExecRole.Arn
-    #   Events:
-    #     Api:
-    #       Type: HttpApi
-    #       Properties:
-    #         Method: GET
-    #         Path: /oci
-    # Metadata:
-    #   DockerTag: java11-maven-v1
-    #   DockerContext: ../
-    #   Dockerfile: dockerfile.lambda
+    Metadata:
+      DockerTag: emulation-java11
+      DockerContext: ../
+      Dockerfile: dockerfile.lambda
   FnOciLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -141,3 +144,5 @@ Outputs:
     Value: !Ref Api
   outFn:
     Value: !Ref Fn
+  outFnOci:
+    Value: !Ref FnOci
