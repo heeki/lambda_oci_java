@@ -28,8 +28,7 @@ paths:
         - unicorn-api-authorizer: []
       x-amazon-apigateway-integration:
         httpMethod: POST
-        payloadFormatVersion:
-          Fn::Sub: '${pPayloadVersion}'
+        payloadFormatVersion: "2.0"
         responses:
           default:
             statusCode: 200
@@ -48,8 +47,7 @@ paths:
         - unicorn-api-authorizer: []
       x-amazon-apigateway-integration:
         httpMethod: POST
-        payloadFormatVersion:
-          Fn::Sub: '${pPayloadVersion}'
+        payloadFormatVersion: "2.0"
         responses:
           default:
             statusCode: 200
@@ -78,8 +76,7 @@ paths:
         - unicorn-api-authorizer: []
       x-amazon-apigateway-integration:
         httpMethod: POST
-        payloadFormatVersion:
-          Fn::Sub: '${pPayloadVersion}'
+        payloadFormatVersion: "2.0"
         responses:
           default:
             statusCode: 200
@@ -101,8 +98,7 @@ paths:
         - unicorn-api-authorizer: []
       x-amazon-apigateway-integration:
         httpMethod: POST
-        payloadFormatVersion:
-          Fn::Sub: '${pPayloadVersion}'
+        payloadFormatVersion: "2.0"
         responses:
           default:
             statusCode: 200
@@ -121,8 +117,7 @@ paths:
         - unicorn-api-authorizer: []
       x-amazon-apigateway-integration:
         httpMethod: POST
-        payloadFormatVersion:
-          Fn::Sub: '${pPayloadVersion}'
+        payloadFormatVersion: "2.0"
         responses:
           default:
             statusCode: 200
@@ -151,8 +146,7 @@ paths:
         - unicorn-api-authorizer: []
       x-amazon-apigateway-integration:
         httpMethod: POST
-        payloadFormatVersion:
-          Fn::Sub: '${pPayloadVersion}'
+        payloadFormatVersion: "2.0"
         responses:
           default:
             statusCode: 200

@@ -12,9 +12,6 @@ Parameters:
     Type: String
   pImageUri:
     Type: String
-  pPayloadVersion:
-    Type: String
-    Default: '2.0'
   pTableArn:
     Type: String
 Resources:
@@ -92,7 +89,7 @@ Resources:
                   - dynamodb:Query
                   - dynamodb:Scan
                   - dynamodb:UpdateItem
-                Resource: 'arn:aws:logs:*:*:log-group:/aws/lambda-insights:*'
+                Resource: !Ref pTableArn
   Fn:
     Type: AWS::Serverless::Function
     Properties:

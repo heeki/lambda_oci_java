@@ -1,12 +1,13 @@
 package cloud.heeki.oci;
 
+import cloud.heeki.oci.lib.Customer;
+import cloud.heeki.oci.lib.DynamoAdapter;
+import cloud.heeki.oci.lib.PropertiesLoader;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
-import cloud.heeki.oci.lib.Customer;
-import cloud.heeki.oci.lib.PropertiesLoader;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.util.ArrayList;
@@ -14,48 +15,35 @@ import java.util.Base64;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Properties;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.ScanResponse;
+import software.amazon.awssdk.services.dynamodb.paginators.ScanIterable;
 
 public class OciHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
     private Properties props = PropertiesLoader.loadProperties("application.properties");
     private ArrayList<Customer> customers = new ArrayList<Customer>();
-    // private Gson g = new GsonBuilder().setPrettyPrinting().create();
     private Gson g = new Gson();
+    private DynamoAdapter da;
 
     public OciHandler() {
-        // initialization: database
-        // dbserver = props.getProperty("database.server");
-        // dbport = props.getProperty("database.port");
-        // dbname = props.getProperty("database.name");
+        // initialization: client
         System.out.println(g.toJson(this.props));
+        this.da = new DynamoAdapter(props.getProperty("table.name"));
 
-        // initialization: data structures
-        Customer c1 = new Customer("John", "Doe", "1970-01-01", "john.doe@heeki.cloud", "+15551234567", true);
-        Customer c2 = new Customer("Jane", "Doe", "1970-01-01", "jane.doe@heeki.cloud", "+15551234567", true);
-        customers.add(c1);
-        customers.add(c2);
-    }
-
-    private String getCustomers(APIGatewayV2HTTPEvent event, Context context) {
-        return this.customers.toString();
-    }
-
-    private String createCustomer(APIGatewayV2HTTPEvent event, Context context) {
-        String body = getDecodedBody(event);
-        Customer c = new Customer(body);
-        customers.add(c);
-        return c.uuid.toString();
-    }
-
-    private void deleteCustomer(APIGatewayV2HTTPEvent event, Context context) {
-        String id = event.getPathParameters().get("proxy");
-        customers.removeIf(c -> c.uuid.toString().equals(id));
+        // initialization: read from dynamodb
+        for (ScanResponse page : da.scan()) {
+            for (Map<String, AttributeValue> item : page.items()) {
+                Customer c = new Customer(item);
+                customers.add(c);
+            }
+        }
     }
 
     @Override
     public APIGatewayV2HTTPResponse handleRequest(APIGatewayV2HTTPEvent event, Context context) {
         LambdaLogger logger = context.getLogger();
-        logger.log(g.toJson(context));
-        logger.log(g.toJson(event));
+        // logger.log(g.toJson(context));
+        // logger.log(g.toJso1n(event));
         String method = event.getRequestContext().getHttp().getMethod();
         String response = "";
         switch (method) {
@@ -70,6 +58,24 @@ public class OciHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGate
                 break;
         }
         return buildResponse(200, response);
+    }
+
+    private String getCustomers(APIGatewayV2HTTPEvent event, Context context) {
+        return this.customers.toString();
+    }
+
+    private String createCustomer(APIGatewayV2HTTPEvent event, Context context) {
+        String body = getDecodedBody(event);
+        Customer c = new Customer(body);
+        this.da.put(c);
+        customers.add(c);
+        return c.toString();
+    }
+
+    private void deleteCustomer(APIGatewayV2HTTPEvent event, Context context) {
+        String id = event.getPathParameters().get("proxy");
+        this.da.delete(id);
+        customers.removeIf(c -> c.uuid.toString().equals(id));
     }
 
     private String getDecodedBody(APIGatewayV2HTTPEvent event) {
