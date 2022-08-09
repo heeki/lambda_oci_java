@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
@@ -19,7 +20,7 @@ import software.amazon.awssdk.services.dynamodb.model.ScanResponse;
 import software.amazon.awssdk.services.dynamodb.paginators.ScanIterable;
 
 public class DynamoAdapter {
-    private EnvironmentVariableCredentialsProvider credentials;
+    private AwsCredentialsProvider credentials;
     private Region region;
     private DynamoDbClient client;
     private String table;
@@ -28,7 +29,7 @@ public class DynamoAdapter {
     public DynamoAdapter(String table) {
         this.g = new Gson();
         this.table = table;
-        this.credentials = EnvironmentVariableCredentialsProvider.create();
+        this.credentials = (System.getenv("AWS_ACCESS_KEY_ID") != null && System.getenv("AWS_SECRET_ACCESS_KEY") != null) ? EnvironmentVariableCredentialsProvider.create() : ProfileCredentialsProvider.create();
         this.region = System.getenv("AWS_REGION") != null ? Region.of(System.getenv("AWS_REGION")) : Region.US_EAST_1;
         this.client = DynamoDbClient.builder()
             .credentialsProvider(credentials)
