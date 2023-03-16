@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
@@ -29,7 +31,9 @@ public class DynamoAdapter {
     public DynamoAdapter(String table) {
         this.g = new Gson();
         this.table = table;
-        this.credentials = (System.getenv("AWS_ACCESS_KEY_ID") != null && System.getenv("AWS_SECRET_ACCESS_KEY") != null) ? EnvironmentVariableCredentialsProvider.create() : ProfileCredentialsProvider.create();
+        // For SnapStart, can't use ProfileCredentialsProvider, have to use DefaultCredentialsProvider or ContainerCredentialsProvider
+        // Remember the DefaultCredentialsProvider will search the chain while ContainerCredentialsProvider will be used directly
+        this.credentials = (System.getenv("AWS_ACCESS_KEY_ID") != null && System.getenv("AWS_SECRET_ACCESS_KEY") != null) ? EnvironmentVariableCredentialsProvider.create() : DefaultCredentialsProvider.create();
         this.region = System.getenv("AWS_REGION") != null ? Region.of(System.getenv("AWS_REGION")) : Region.US_EAST_1;
         this.client = DynamoDbClient.builder()
             .credentialsProvider(credentials)

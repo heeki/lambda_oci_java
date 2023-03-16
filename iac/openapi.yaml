@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
-  title: oci-api-customer-java
-  description: OCI API for Customers
+  title: oci-spring-boot
+  description: OCI API with Spring Boot backend
   version: 0.1.0
   license:
     name: Apache 2.0
@@ -24,8 +24,8 @@ paths:
           $ref: '#/components/responses/error'
         default:
           description: ok
-      security:
-        - unicorn-api-authorizer: []
+      # security:
+      #   - unicorn-api-authorizer: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         payloadFormatVersion: "2.0"
@@ -43,8 +43,8 @@ paths:
           description: ok
         default:
           description: error
-      security:
-        - unicorn-api-authorizer: []
+      # security:
+      #   - unicorn-api-authorizer: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         payloadFormatVersion: "2.0"
@@ -72,8 +72,8 @@ paths:
           $ref: '#/components/responses/error'
         default:
           $ref: '#/components/responses/error'
-      security:
-        - unicorn-api-authorizer: []
+      # security:
+      #   - unicorn-api-authorizer: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         payloadFormatVersion: "2.0"
@@ -94,8 +94,8 @@ paths:
           $ref: '#/components/responses/error'
         default:
           description: ok
-      security:
-        - unicorn-api-authorizer: []
+      # security:
+      #   - unicorn-api-authorizer: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         payloadFormatVersion: "2.0"
@@ -113,8 +113,8 @@ paths:
           description: ok
         default:
           description: error
-      security:
-        - unicorn-api-authorizer: []
+      # security:
+      #   - unicorn-api-authorizer: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         payloadFormatVersion: "2.0"
@@ -142,8 +142,8 @@ paths:
           $ref: '#/components/responses/error'
         default:
           $ref: '#/components/responses/error'
-      security:
-        - unicorn-api-authorizer: []
+      # security:
+      #   - unicorn-api-authorizer: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         payloadFormatVersion: "2.0"

@@ -1,0 +1,15 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: ECR repository for OCI demo
+Transform: AWS::Serverless-2016-10-31
+Parameters:
+  pName:
+    Type: String
+Resources:
+  # ECR
+  Repository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Ref pName
+Outputs:
+  outRepository:
+    Value: !Ref Repository
