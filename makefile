@@ -7,7 +7,7 @@ mvn.compile:
 mvn.package:
 	mvn package
 
-docker: docker.build docker.login docker.tag docker.push
+docker: mvn.compile docker.build docker.login docker.tag docker.push
 docker.build:
 	docker build -f dockerfile.lambda -t ${CIMAGE}:${CVERSION} .
 docker.login:
@@ -29,26 +29,34 @@ docker.clean.rmi:
 
 ddb: ddb.package ddb.deploy
 ddb.package:
-	sam package -t ${DDB_TEMPLATE} --output-template-file ${DDB_OUTPUT} --s3-bucket ${S3BUCKET}
+	sam package --profile ${PROFILE} -t ${DDB_TEMPLATE} --output-template-file ${DDB_OUTPUT} --s3-bucket ${S3BUCKET} --s3-prefix ${DDB_STACK}
 ddb.deploy:
-	sam deploy -t ${DDB_OUTPUT} --stack-name ${DDB_STACK} --parameter-overrides ${DDB_PARAMS} --capabilities CAPABILITY_NAMED_IAM
+	sam deploy --profile ${PROFILE} -t ${DDB_OUTPUT} --stack-name ${DDB_STACK} --parameter-overrides ${DDB_PARAMS} --capabilities CAPABILITY_NAMED_IAM
 
-api: api.package api.deploy
-api.build:
+ecr: ecr.package ecr.deploy
+ecr.package:
+	sam package --profile ${PROFILE} -t ${ECR_TEMPLATE} --output-template-file ${ECR_OUTPUT} --s3-bucket ${S3BUCKET} --s3-prefix ${ECR_STACK}
+ecr.deploy:
+	sam deploy --profile ${PROFILE} -t ${ECR_OUTPUT} --stack-name ${ECR_STACK} --parameter-overrides ${ECR_PARAMS} --capabilities CAPABILITY_NAMED_IAM
+
+apigw: apigw.package apigw.deploy
+apigw.build:
 	sam build --profile ${PROFILE} --template ${APIGW_TEMPLATE} --parameter-overrides ${APIGW_PARAMS} --build-dir build --manifest requirements.txt --use-container
-api.package:
-	sam package -t ${APIGW_TEMPLATE} --image-repository ${P_IMAGEURI} --output-template-file ${APIGW_OUTPUT} --s3-bucket ${S3BUCKET}
-api.deploy:
-	sam deploy -t ${APIGW_OUTPUT} --stack-name ${APIGW_STACK} --parameter-overrides ${APIGW_PARAMS} --image-repository ${P_IMAGEURI} --capabilities CAPABILITY_NAMED_IAM
+apigw.package:
+	sam package --profile ${PROFILE} -t ${APIGW_TEMPLATE} --image-repository ${P_IMAGEURI} --output-template-file ${APIGW_OUTPUT} --s3-bucket ${S3BUCKET} --s3-prefix ${APIGW_STACK}
+apigw.deploy:
+	sam deploy --profile ${PROFILE} -t ${APIGW_OUTPUT} --stack-name ${APIGW_STACK} --parameter-overrides ${APIGW_PARAMS} --image-repository ${P_IMAGEURI} --capabilities CAPABILITY_NAMED_IAM
 
+local.sts:
+	aws sts --profile ${PROFILE} get-session-token | jq
 local.invoke.jar:
 	sam local invoke -t ${APIGW_TEMPLATE} --parameter-overrides ${APIGW_PARAMS} --env-vars etc/envvars.json -e etc/event.json Fn | jq -r ".body" | jq
 local.invoke.oci:
-	sam local invoke -t ${APIGW_TEMPLATE} --parameter-overrides ${APIGW_PARAMS} --env-vars etc/envvars.json -e etc/event.json FnOci | jq -r ".body" | jq
+	sam local invoke -t ${APIGW_TEMPLATE} --parameter-overrides ${APIGW_PARAMS} --env-vars etc/envvars_oci.json -e etc/event.json FnOci | jq -r ".body" | jq
 local.api:
 	sam local start-api -t ${APIGW_TEMPLATE} --parameter-overrides ${APIGW_PARAMS} --warm-containers LAZY
 lambda.invoke:
-	aws --profile ${PROFILE} lambda invoke --function-name ${O_FN} --invocation-type RequestResponse --payload file://etc/event.json --cli-binary-format raw-in-base64-out --log-type Tail tmp/fn.json | jq "." > tmp/response.json
+	aws lambda --profile ${PROFILE} invoke --function-name ${O_FN} --invocation-type RequestResponse --payload file://etc/event.json --cli-binary-format raw-in-base64-out --log-type Tail tmp/fn.json | jq "." > tmp/response.json
 	cat tmp/response.json | jq -r ".LogResult" | base64 --decode
 
 test:

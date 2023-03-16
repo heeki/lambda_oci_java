@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: OCI APIGW for Customers
+Description: APIGW for OCI demo
 Transform: AWS::Serverless-2016-10-31
 Globals:
   Api:
@@ -31,11 +31,11 @@ Resources:
   ApiLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/apigateway/oci-api-customer-${Api}"
+      LogGroupName: !Sub "/aws/apigateway/oci-java-${Api}"
       RetentionInDays: 7
 
   # Lambda
-  FnExecRole:
+  FnRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -49,18 +49,7 @@ Resources:
               - sts:AssumeRole
       Path: '/service-role/'
       Policies:
-        - PolicyName: cloudwatch-logs
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                  - logs:DescribeLogStreams
-                Resource: 'arn:aws:logs:*:*:log-group:*:*'
-        - PolicyName: cloudwatch-insights-1
+        - PolicyName: cloudwatch-insights
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -68,7 +57,7 @@ Resources:
                 Action:
                   - logs:CreateLogGroup
                 Resource: '*'
-        - PolicyName: cloudwatch-insights-2
+        - PolicyName: cloudwatch-logs
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -76,7 +65,8 @@ Resources:
                 Action:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
-                Resource: 'arn:aws:logs:*:*:log-group:/aws/lambda-insights:*'
+                  - logs:DescribeLogStreams
+                Resource: 'arn:aws:logs:*:*:log-group:*:*'
         - PolicyName: dynamodb
           PolicyDocument:
             Version: '2012-10-17'
@@ -96,12 +86,12 @@ Resources:
       Runtime: java11
       CodeUri: ../target/oci-0.0.1-SNAPSHOT.jar
       Handler: cloud.heeki.oci.OciHandler::handleRequest
-      Role: !GetAtt FnExecRole.Arn
+      Role: !GetAtt FnRole.Arn
       Environment:
         Variables:
           TABLE_ARN: !Select [1, !Split ["/", !Ref pTableArn]]
       Layers:
-        - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:14'
+        - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:21'
   FnLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -119,7 +109,7 @@ Resources:
     Properties:
       PackageType: Image
       ImageUri: !Ref pImageUri
-      Role: !GetAtt FnExecRole.Arn
+      Role: !GetAtt FnRole.Arn
     Metadata:
       DockerTag: emulation-java11
       DockerContext: ../
@@ -139,7 +129,9 @@ Resources:
 Outputs:
   outApi:
     Value: !Ref Api
-  outFn:
-    Value: !Ref Fn
-  outFnOci:
-    Value: !Ref FnOci
+  outApiEndpoint:
+    Value: !Sub 'https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${pApiStage}'
+  outFnArn:
+    Value: !GetAtt Fn.Arn
+  outFnOciArn:
+    Value: !GetAtt FnOci.Arn
