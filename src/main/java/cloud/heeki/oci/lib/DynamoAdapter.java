@@ -1,5 +1,6 @@
 package cloud.heeki.oci.lib;
 
+import com.amazonaws.xray.interceptors.TracingInterceptor;
 import com.google.gson.Gson;
 import java.util.Collections;
 import java.util.HashMap;
@@ -8,6 +9,7 @@ import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -38,6 +40,9 @@ public class DynamoAdapter {
         this.client = DynamoDbClient.builder()
             .credentialsProvider(credentials)
             .region(region)
+            .overrideConfiguration(ClientOverrideConfiguration.builder()
+                .addExecutionInterceptor(new TracingInterceptor())
+                .build())
             .httpClient(UrlConnectionHttpClient.builder().build())
             .build();
     }

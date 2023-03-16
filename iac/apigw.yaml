@@ -22,6 +22,10 @@ Resources:
       AccessLogSettings:
         DestinationArn: !GetAtt ApiLogGroup.Arn
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength", "auth.status":"$context.authorizer.status", "auth.error":"$context.authorizer.error", "auth.token":"$context.authorizer.token", "auth.reason":"$context.authorizer.reason", "auth.simple":"$context.authorizer.simple", "auth.pversion":"$context.authorizer.pversion" }'
+      DefaultRouteSettings:
+        DataTraceEnabled: true
+        DetailedMetricsEnabled: true
+        # LoggingLevel: INFO
       StageName: !Ref pApiStage
       DefinitionBody:
         Fn::Transform:
@@ -67,6 +71,18 @@ Resources:
                   - logs:PutLogEvents
                   - logs:DescribeLogStreams
                 Resource: 'arn:aws:logs:*:*:log-group:*:*'
+        - PolicyName: xray
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - xray:PutTraceSegments
+                  - xray:PutTelemetryRecords
+                  - xray:GetSamplingRules
+                  - xray:GetSamplingTargets
+                  - xray:GetSamplingStatisticSummaries
+                Resource: '*'
         - PolicyName: dynamodb
           PolicyDocument:
             Version: '2012-10-17'
@@ -92,6 +108,7 @@ Resources:
           TABLE_ARN: !Select [1, !Split ["/", !Ref pTableArn]]
       Layers:
         - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:21'
+      Tracing: Active
   FnLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
