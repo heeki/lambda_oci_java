@@ -2,7 +2,7 @@
 This repository aims to provide sample code to demonstrate the deployment of a Java-based Lambda function as an OCI-compliant container image. 
 
 ## Execution
-A makefile was created for convenience of execution. It depends on an `etc/execute_env.sh` file that contains the values for all of the necessary variables.
+A makefile was created for convenience of execution. It depends on an `etc/environment.sh` file that contains the values for all of the necessary variables.
 
 ```bash
 PROFILE=[AWS_CLI_PROFILE]
@@ -31,12 +31,12 @@ The process for compiling, building, and deploying the full stack is below.
 ```bash
 make mvn.compile
 make docker
-make sam
+make apigw
 ```
 
 ## Local Testing
 For testing locally, the jar-based and oci-based functions can be invoked with the following commands.
 ```bash
-make sam.local.invoke.jar
-make sam.local.invoke.oci
+make local.invoke.jar
+make local.invoke.oci
 ```
