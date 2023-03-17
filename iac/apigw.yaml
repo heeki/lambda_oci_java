@@ -7,6 +7,9 @@ Globals:
   Function:
     Timeout: 60
     MemorySize: 1024
+    Environment:
+      Variables:
+        TABLE_NAME: !Select [1, !Split ["/", !Ref pTableArn]]
 Parameters:
   pApiStage:
     Type: String
@@ -17,21 +20,24 @@ Parameters:
 Resources:
   # APIGW
   Api:
-    Type: AWS::Serverless::HttpApi
+    Type: AWS::Serverless::Api
     Properties:
-      AccessLogSettings:
+      AccessLogSetting:
         DestinationArn: !GetAtt ApiLogGroup.Arn
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength", "auth.status":"$context.authorizer.status", "auth.error":"$context.authorizer.error", "auth.token":"$context.authorizer.token", "auth.reason":"$context.authorizer.reason", "auth.simple":"$context.authorizer.simple", "auth.pversion":"$context.authorizer.pversion" }'
-      DefaultRouteSettings:
-        DataTraceEnabled: true
-        DetailedMetricsEnabled: true
-        # LoggingLevel: INFO
       StageName: !Ref pApiStage
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
             Location: openapi.yaml
+      MethodSettings:
+        - HttpMethod: '*'
+          LoggingLevel: INFO
+          ResourcePath: '/*'
+          MetricsEnabled: true
+          DataTraceEnabled: true
+      TracingEnabled: true
   ApiLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -103,9 +109,10 @@ Resources:
       CodeUri: ../target/oci-0.0.1-SNAPSHOT.jar
       Handler: cloud.heeki.oci.OciHandler::handleRequest
       Role: !GetAtt FnRole.Arn
-      Environment:
-        Variables:
-          TABLE_ARN: !Select [1, !Split ["/", !Ref pTableArn]]
+      # Environment:
+      #   Variables:
+      #     # for local invoke only
+      #     AWS_XRAY_DAEMON_ADDRESS: "127.0.0.1:5000"
       Layers:
         - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:21'
       Tracing: Active
