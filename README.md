@@ -75,4 +75,4 @@ make docker
 make local.invoke.oci
 ```
 
-And lastly, you'll need to configure an `event.json` payload that will be passed to the Lambda function. A sample event payload can be generated using SAM: `sam local generate-event apigateway aws-proxy`.
+And lastly, you'll need to configure an `etc/event.json` payload that will be passed to the Lambda function. A sample event payload can be generated using SAM: `sam local generate-event apigateway aws-proxy`.
