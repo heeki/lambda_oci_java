@@ -3,7 +3,7 @@ include etc/environment.sh
 all: mvn.package docker sam
 
 mvn.compile:
-	mvn dependency:copy-dependencies -DincludeScope=compile
+	mvn dependency:copy-dependencies -DincludeScope=runtime
 mvn.package:
 	mvn package
 
@@ -48,11 +48,12 @@ apigw.deploy:
 	sam deploy --profile ${PROFILE} -t ${APIGW_OUTPUT} --stack-name ${APIGW_STACK} --parameter-overrides ${APIGW_PARAMS} --image-repository ${P_IMAGEURI} --capabilities CAPABILITY_NAMED_IAM
 
 local.sts:
-	aws sts --profile ${PROFILE} get-session-token | jq
-local.invoke.jar:
+	# aws sts --profile ${PROFILE} get-session-token | jq > etc/creds.json
+	cat etc/creds.json | jq '{"FnOci": {"AWS_ACCESS_KEY_ID": .Credentials.AccessKeyId, "AWS_SECRET_ACCESS_KEY": .Credentials.SecretAccessKey, "AWS_SESSION_TOKEN": .Credentials.SessionToken, "AWS_REGION": "${REGION}"}}'
+local.jar:
 	sam local invoke -t ${APIGW_TEMPLATE} --parameter-overrides ${APIGW_PARAMS} --env-vars etc/envvars.json -e etc/event.json Fn | jq -r ".body" | jq
-local.invoke.oci:
-	sam local invoke -t ${APIGW_TEMPLATE} --parameter-overrides ${APIGW_PARAMS} --env-vars etc/envvars_oci.json -e etc/event.json FnOci | jq -r ".body" | jq
+local.oci:
+	sam local invoke -t ${APIGW_TEMPLATE} --parameter-overrides ${APIGW_PARAMS} --env-vars etc/envvars.json -e etc/event.json FnOci | jq -r ".body" | jq
 local.api:
 	sam local start-api -t ${APIGW_TEMPLATE} --parameter-overrides ${APIGW_PARAMS} --warm-containers LAZY
 lambda.invoke:
